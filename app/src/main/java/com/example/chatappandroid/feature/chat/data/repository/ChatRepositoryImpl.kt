@@ -1,5 +1,6 @@
 package com.example.chatappandroid.feature.chat.data.repository
 
+import com.example.chatappandroid.core.di.ApplicationScope
 import com.example.chatappandroid.feature.chat.data.local.ChatDao
 import com.example.chatappandroid.feature.chat.data.mapper.toDomain
 import com.example.chatappandroid.feature.chat.data.mapper.toEntity
@@ -8,8 +9,6 @@ import com.example.chatappandroid.feature.chat.data.stream.FakeNetworkConfig
 import com.example.chatappandroid.feature.chat.domain.model.Message
 import com.example.chatappandroid.feature.chat.domain.repository.ChatRepository
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -24,9 +23,8 @@ class ChatRepositoryImpl
         private val dao: ChatDao,
         private val stream: ChatMessageStream,
         private val fakeNetworkConfig: FakeNetworkConfig,
+        @ApplicationScope private val scope: CoroutineScope,
     ) : ChatRepository {
-        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-
         init {
             scope.launch {
                 stream.messages.collect { message ->
