@@ -40,6 +40,9 @@ class ChatRepositoryImpl @Inject constructor(
     override suspend fun updateMessage(message: Message) =
         dao.upsert(message.toEntity())
 
-    override suspend fun sendMessageToServer(message: Message): Result<Message> =
-        TODO("Wire to real backend when available")
+    override suspend fun sendMessageToServer(message: Message): Result<Message> {
+        // Simulate network delay and success — replace with real API call when backend exists
+        kotlinx.coroutines.delay(500)
+        return Result.success(message.copy(serverTimestamp = System.currentTimeMillis()))
+    }
 }
