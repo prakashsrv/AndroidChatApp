@@ -13,6 +13,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -30,17 +31,20 @@ fun DebugPanel(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
         )
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Button(
                 onClick = onSimulateRapidInbound,
                 modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.tertiary,
-                ),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = Color.Red,
+                        contentColor = Color.White,
+                    ),
             ) {
                 Text("Rapid Inbound", style = MaterialTheme.typography.labelSmall)
             }
