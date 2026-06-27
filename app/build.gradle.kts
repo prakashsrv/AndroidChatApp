@@ -67,6 +67,7 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.lifecycle.viewmodel.compose)
+    implementation(libs.navigation.compose)
 
     // Persistence
     implementation(libs.room.runtime)
