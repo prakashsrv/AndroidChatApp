@@ -48,16 +48,18 @@ private fun BouncingDot(delayMillis: Int) {
     val offsetY by transition.animateFloat(
         initialValue = 0f,
         targetValue = -6f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(400, delayMillis = delayMillis, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse,
-        ),
+        animationSpec =
+            infiniteRepeatable(
+                animation = tween(400, delayMillis = delayMillis, easing = LinearEasing),
+                repeatMode = RepeatMode.Reverse,
+            ),
         label = "offsetY_$delayMillis",
     )
     Box(
-        modifier = Modifier
-            .size(8.dp)
-            .offset(y = offsetY.dp)
-            .background(MaterialTheme.colorScheme.outline, CircleShape),
+        modifier =
+            Modifier
+                .size(8.dp)
+                .offset(y = offsetY.dp)
+                .background(MaterialTheme.colorScheme.outline, CircleShape),
     )
 }

@@ -11,8 +11,10 @@ import com.example.chatappandroid.feature.chat.domain.model.MessageStatus
     indices = [Index(value = ["serverId"], unique = true, orders = [Index.Order.ASC])],
 )
 data class MessageEntity(
-    @PrimaryKey val id: String,           // client UUID — stable from PENDING through SENT
-    @ColumnInfo(name = "serverId") val serverId: String?, // server-assigned ID; unique once known
+    // client UUID — stable from PENDING through SENT
+    @PrimaryKey val id: String,
+    // server-assigned ID; unique index blocks duplicate inbound messages on reconnect
+    @ColumnInfo(name = "serverId") val serverId: String?,
     val content: String,
     val senderId: String,
     val clientTimestamp: Long,

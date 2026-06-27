@@ -33,20 +33,29 @@ fun MessageBubble(
     ) {
         Column(horizontalAlignment = if (isOwn) Alignment.End else Alignment.Start) {
             Surface(
-                shape = RoundedCornerShape(
-                    topStart = 16.dp,
-                    topEnd = 16.dp,
-                    bottomStart = if (isOwn) 16.dp else 4.dp,
-                    bottomEnd = if (isOwn) 4.dp else 16.dp,
-                ),
-                color = if (isOwn) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.surfaceVariant,
+                shape =
+                    RoundedCornerShape(
+                        topStart = 16.dp,
+                        topEnd = 16.dp,
+                        bottomStart = if (isOwn) 16.dp else 4.dp,
+                        bottomEnd = if (isOwn) 4.dp else 16.dp,
+                    ),
+                color =
+                    if (isOwn) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant
+                    },
             ) {
                 Text(
                     text = message.content,
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                    color = if (isOwn) MaterialTheme.colorScheme.onPrimary
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    color =
+                        if (isOwn) {
+                            MaterialTheme.colorScheme.onPrimary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
                 )
             }
 

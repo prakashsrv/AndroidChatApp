@@ -11,9 +11,10 @@ plugins {
 android {
     namespace = "com.example.chatappandroid"
     compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
+        version =
+            release(36) {
+                minorApiLevel = 1
+            }
     }
 
     defaultConfig {
@@ -79,7 +80,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
 
     // Tests
-    testImplementation(libs.kotlinx.coroutines.test)  // for runTest — you were missing this
+    testImplementation(libs.kotlinx.coroutines.test) // for runTest — you were missing this
     testImplementation(libs.turbine)
     testImplementation(libs.mockk)
     testImplementation(libs.junit)
@@ -89,5 +90,4 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
-
 }
