@@ -12,7 +12,7 @@ A single, focused **native Android** chat screen built to demonstrate production
 
 ---
 
-![Demo](docs/androidchat.gif)
+<img src="docs/androidchat.gif" width="320" alt="Demo"/>
 
 ---
 
