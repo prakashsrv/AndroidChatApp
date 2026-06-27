@@ -1,0 +1,44 @@
+build:
+  maxIssues: 0
+
+config:
+  validation: true
+  warningsAsErrors: false
+
+complexity:
+  LongParameterList:
+    functionThreshold: 8         # Compose functions legitimately take many params
+    constructorThreshold: 8
+  TooManyFunctions:
+    thresholdInFiles: 20
+    thresholdInClasses: 15
+    thresholdInInterfaces: 10
+    thresholdInObjects: 15
+    thresholdInEnums: 10
+  CyclomaticComplexMethod:
+    threshold: 15
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: false
+
+naming:
+  FunctionNaming:
+    ignoreAnnotated:
+      - 'Composable'             # Composables use PascalCase by convention
+
+style:
+  MagicNumber:
+    ignoreAnnotated:
+      - 'Composable'
+    ignoreNumbers:
+      - '-1'
+      - '0'
+      - '1'
+      - '2'
+  ReturnCount:
+    max: 3
+  UnusedPrivateMember:
+    active: true
+  WildcardImport:
+    active: true
