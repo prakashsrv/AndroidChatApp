@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 fun DebugPanel(
     onSimulateRapidInbound: () -> Unit,
     onToggleTyping: () -> Unit,
+    onSimulateNextFailure: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -53,6 +54,16 @@ fun DebugPanel(
                 modifier = Modifier.weight(1f),
             ) {
                 Text("Toggle Typing", style = MaterialTheme.typography.labelSmall)
+            }
+            OutlinedButton(
+                onClick = onSimulateNextFailure,
+                modifier = Modifier.weight(1f),
+                colors =
+                    ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color.Red,
+                    ),
+            ) {
+                Text("Force Fail", style = MaterialTheme.typography.labelSmall)
             }
         }
     }

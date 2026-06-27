@@ -54,6 +54,7 @@ fun ChatScreen(viewModel: ChatViewModel = hiltViewModel()) {
                 DebugPanel(
                     onSimulateRapidInbound = { viewModel.onAction(ChatAction.SimulateRapidInbound) },
                     onToggleTyping = { viewModel.onAction(ChatAction.ToggleTyping) },
+                    onSimulateNextFailure = { viewModel.onAction(ChatAction.SimulateNextFailure) },
                 )
                 HorizontalDivider()
                 ChatInputBar(
