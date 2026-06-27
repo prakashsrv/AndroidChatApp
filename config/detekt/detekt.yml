@@ -28,6 +28,10 @@ naming:
       - 'Composable'             # Composables use PascalCase by convention
 
 style:
+  MaxLineLength:
+    excludes:
+      - '**/test/**'
+      - '**/androidTest/**'
   MagicNumber:
     ignoreAnnotated:
       - 'Composable'

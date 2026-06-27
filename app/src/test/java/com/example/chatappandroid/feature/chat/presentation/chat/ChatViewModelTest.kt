@@ -1,5 +1,6 @@
 package com.example.chatappandroid.feature.chat.presentation.chat
 
+import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.example.chatappandroid.feature.chat.data.stream.FakeChatStream
 import com.example.chatappandroid.feature.chat.data.stream.FakeNetworkConfig
@@ -33,6 +34,7 @@ class ChatViewModelTest {
     private lateinit var retryMessage: RetryMessageUseCase
     private lateinit var fakeChatStream: FakeChatStream
     private lateinit var fakeNetworkConfig: FakeNetworkConfig
+    private lateinit var savedStateHandle: SavedStateHandle
     private lateinit var viewModel: ChatViewModel
 
     @Before
@@ -43,8 +45,9 @@ class ChatViewModelTest {
         retryMessage = mockk(relaxed = true)
         fakeChatStream = FakeChatStream()
         fakeNetworkConfig = FakeNetworkConfig()
+        savedStateHandle = SavedStateHandle()
         every { observeMessages() } returns flowOf(emptyList())
-        viewModel = ChatViewModel(observeMessages, sendMessage, retryMessage, fakeChatStream, fakeNetworkConfig)
+        viewModel = buildViewModel()
     }
 
     @After
@@ -65,7 +68,7 @@ class ChatViewModelTest {
         runTest {
             val messages = listOf(fakeMessage("1"), fakeMessage("2"))
             every { observeMessages() } returns flowOf(messages)
-            viewModel = ChatViewModel(observeMessages, sendMessage, retryMessage, fakeChatStream, fakeNetworkConfig)
+            viewModel = buildViewModel()
 
             testDispatcher.scheduler.advanceUntilIdle()
 
@@ -139,13 +142,22 @@ class ChatViewModelTest {
         runTest {
             val failedMessage = fakeMessage("msg_1", status = MessageStatus.FAILED)
             every { observeMessages() } returns flowOf(listOf(failedMessage))
-            viewModel = ChatViewModel(observeMessages, sendMessage, retryMessage, fakeChatStream, fakeNetworkConfig)
+            viewModel = buildViewModel()
             testDispatcher.scheduler.advanceUntilIdle()
 
             viewModel.onAction(ChatAction.RetryMessage("msg_1"))
             testDispatcher.scheduler.advanceUntilIdle()
 
             coVerify { retryMessage(failedMessage) }
+        }
+
+    @Test
+    fun `input text is restored from SavedStateHandle after process death`() =
+        runTest {
+            savedStateHandle["input_text"] = "draft message"
+            viewModel = buildViewModel()
+
+            assertEquals("draft message", viewModel.uiState.value.inputText)
         }
 
     @Test
@@ -156,6 +168,16 @@ class ChatViewModelTest {
         }
 
     // --- helpers ---
+
+    private fun buildViewModel() =
+        ChatViewModel(
+            observeMessages,
+            sendMessage,
+            retryMessage,
+            fakeChatStream,
+            fakeNetworkConfig,
+            savedStateHandle,
+        )
 
     private fun fakeMessage(
         id: String,

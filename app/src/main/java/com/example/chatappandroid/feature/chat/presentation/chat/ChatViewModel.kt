@@ -1,5 +1,6 @@
 package com.example.chatappandroid.feature.chat.presentation.chat
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chatappandroid.feature.chat.data.stream.FakeChatStream
@@ -30,8 +31,10 @@ class ChatViewModel
         // debug only — swap for a real push source when backend exists
         private val fakeChatStream: FakeChatStream,
         private val fakeNetworkConfig: FakeNetworkConfig,
+        private val savedStateHandle: SavedStateHandle,
     ) : ViewModel() {
-        private val _uiState = MutableStateFlow(ChatUiState())
+        private val _uiState =
+            MutableStateFlow(ChatUiState(inputText = savedStateHandle[KEY_INPUT_TEXT] ?: ""))
         val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
 
         private val _effects = MutableSharedFlow<ChatEffect>()
@@ -54,7 +57,7 @@ class ChatViewModel
 
         fun onAction(action: ChatAction) {
             when (action) {
-                is ChatAction.InputChanged -> _uiState.update { it.copy(inputText = action.text) }
+                is ChatAction.InputChanged -> onInputChanged(action.text)
                 is ChatAction.SendMessage -> onSend()
                 is ChatAction.RetryMessage -> onRetry(action.messageId)
                 is ChatAction.SimulateRapidInbound -> simulateRapidInbound()
@@ -63,10 +66,15 @@ class ChatViewModel
             }
         }
 
+        private fun onInputChanged(text: String) {
+            savedStateHandle[KEY_INPUT_TEXT] = text
+            _uiState.update { it.copy(inputText = text) }
+        }
+
         private fun onSend() {
             val text = _uiState.value.inputText.trim()
             if (text.isEmpty()) return
-            _uiState.update { it.copy(inputText = "") }
+            onInputChanged("")
             viewModelScope.launch {
                 sendMessage(content = text, senderId = "user_local")
                 _effects.emit(ChatEffect.ScrollToBottom)
@@ -107,5 +115,6 @@ class ChatViewModel
 
         companion object {
             private const val RAPID_INBOUND_COUNT = 30
+            private const val KEY_INPUT_TEXT = "input_text"
         }
     }
