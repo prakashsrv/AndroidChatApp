@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,6 +19,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -50,8 +52,9 @@ fun ChatScreen(viewModel: ChatViewModel = hiltViewModel()) {
     Scaffold(
         topBar = { TopAppBar(title = { Text("Chat") }) },
         bottomBar = {
-            Column(modifier = Modifier.navigationBarsPadding()) {
+            Column(modifier = Modifier.navigationBarsPadding().imePadding()) {
                 DebugPanel(
+                    isFailArmed = uiState.isFailNextSendArmed,
                     onSimulateRapidInbound = { viewModel.onAction(ChatAction.SimulateRapidInbound) },
                     onToggleTyping = { viewModel.onAction(ChatAction.ToggleTyping) },
                     onSimulateNextFailure = { viewModel.onAction(ChatAction.SimulateNextFailure) },
@@ -86,6 +89,17 @@ private fun ChatMessageList(
     onRetry: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Scroll to show typing indicator whenever it appears
+    LaunchedEffect(listState) {
+        snapshotFlow { isTypingIndicatorVisible }
+            .collect { visible ->
+                if (visible) {
+                    val target = messages.size // typing indicator is after all messages
+                    listState.animateScrollToItem(target)
+                }
+            }
+    }
+
     LazyColumn(
         modifier = modifier,
         state = listState,
