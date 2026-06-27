@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -21,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.chatappandroid.feature.chat.domain.model.Message
 import com.example.chatappandroid.feature.chat.presentation.components.ChatInputBar
 import com.example.chatappandroid.feature.chat.presentation.components.DebugPanel
 import com.example.chatappandroid.feature.chat.presentation.components.MessageBubble
@@ -28,9 +30,7 @@ import com.example.chatappandroid.feature.chat.presentation.components.TypingInd
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatScreen(
-    viewModel: ChatViewModel = hiltViewModel(),
-) {
+fun ChatScreen(viewModel: ChatViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
 
@@ -42,15 +42,13 @@ fun ChatScreen(
                         listState.animateScrollToItem(uiState.messages.lastIndex)
                     }
                 }
-                is ChatEffect.ShowError -> Unit // TODO: show snackbar
+                is ChatEffect.ShowError -> Unit // Show snackbar when snackbar host is wired up
             }
         }
     }
 
     Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Chat") })
-        },
+        topBar = { TopAppBar(title = { Text("Chat") }) },
         bottomBar = {
             Column(modifier = Modifier.navigationBarsPadding()) {
                 DebugPanel(
@@ -66,32 +64,46 @@ fun ChatScreen(
             }
         },
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            state = listState,
-            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-        ) {
-            items(
-                items = uiState.messages,
-                key = { it.id },
-            ) { message ->
-                MessageBubble(
-                    message = message,
-                    onRetry = { viewModel.onAction(ChatAction.RetryMessage(it)) },
-                    modifier = Modifier
+        ChatMessageList(
+            messages = uiState.messages,
+            isTypingIndicatorVisible = uiState.isTypingIndicatorVisible,
+            listState = listState,
+            onRetry = { viewModel.onAction(ChatAction.RetryMessage(it)) },
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+        )
+    }
+}
+
+@Composable
+private fun ChatMessageList(
+    messages: List<Message>,
+    isTypingIndicatorVisible: Boolean,
+    listState: LazyListState,
+    onRetry: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyColumn(
+        modifier = modifier,
+        state = listState,
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+    ) {
+        items(items = messages, key = { it.id }) { message ->
+            MessageBubble(
+                message = message,
+                onRetry = onRetry,
+                modifier =
+                    Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp),
-                )
-            }
+            )
+        }
 
-            if (uiState.isTypingIndicatorVisible) {
-                item(key = "typing_indicator") {
-                    TypingIndicator(
-                        modifier = Modifier.padding(vertical = 4.dp),
-                    )
-                }
+        if (isTypingIndicatorVisible) {
+            item(key = "typing_indicator") {
+                TypingIndicator(modifier = Modifier.padding(vertical = 4.dp))
             }
         }
     }

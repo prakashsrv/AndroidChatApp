@@ -16,33 +16,36 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ChatRepositoryImpl @Inject constructor(
-    private val dao: ChatDao,
-    private val stream: ChatMessageStream,
-) : ChatRepository {
+class ChatRepositoryImpl
+    @Inject
+    constructor(
+        private val dao: ChatDao,
+        private val stream: ChatMessageStream,
+    ) : ChatRepository {
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-
-    init {
-        scope.launch {
-            stream.messages.collect { message ->
-                dao.upsert(message.toEntity())
+        init {
+            scope.launch {
+                stream.messages.collect { message ->
+                    dao.upsert(message.toEntity())
+                }
             }
         }
+
+        override fun observeMessages(): Flow<List<Message>> =
+            dao.observeMessages().map { entities -> entities.map { it.toDomain() } }
+
+        override suspend fun insertPendingMessage(message: Message) = dao.upsert(message.toEntity())
+
+        override suspend fun updateMessage(message: Message) = dao.upsert(message.toEntity())
+
+        override suspend fun sendMessageToServer(message: Message): Result<Message> {
+            // Simulate network delay and success — replace with real API call when backend exists
+            kotlinx.coroutines.delay(SIMULATED_DELAY_MS)
+            return Result.success(message.copy(serverTimestamp = System.currentTimeMillis()))
+        }
+
+        companion object {
+            private const val SIMULATED_DELAY_MS = 500L
+        }
     }
-
-    override fun observeMessages(): Flow<List<Message>> =
-        dao.observeMessages().map { entities -> entities.map { it.toDomain() } }
-
-    override suspend fun insertPendingMessage(message: Message) =
-        dao.upsert(message.toEntity())
-
-    override suspend fun updateMessage(message: Message) =
-        dao.upsert(message.toEntity())
-
-    override suspend fun sendMessageToServer(message: Message): Result<Message> {
-        // Simulate network delay and success — replace with real API call when backend exists
-        kotlinx.coroutines.delay(500)
-        return Result.success(message.copy(serverTimestamp = System.currentTimeMillis()))
-    }
-}

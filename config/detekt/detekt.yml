@@ -36,6 +36,10 @@ style:
       - '0'
       - '1'
       - '2'
+    excludes:
+      - '**/ui/theme/**'   # Color hex values in theme files are intentional
+      - '**/test/**'       # Test assertions use literal values by design
+      - '**/androidTest/**'
   ReturnCount:
     max: 3
   UnusedPrivateMember:
