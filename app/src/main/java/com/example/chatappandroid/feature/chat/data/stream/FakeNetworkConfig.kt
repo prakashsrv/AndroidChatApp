@@ -13,8 +13,14 @@ class FakeNetworkConfig
     constructor() {
         @Volatile private var failNextSend = false
 
+        val isArmed: Boolean get() = failNextSend
+
         fun scheduleSendFailure() {
             failNextSend = true
+        }
+
+        fun cancelFailure() {
+            failNextSend = false
         }
 
         /** Reads and clears the flag — only one send fails per call. */

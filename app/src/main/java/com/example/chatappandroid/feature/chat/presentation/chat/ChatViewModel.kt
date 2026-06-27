@@ -62,7 +62,7 @@ class ChatViewModel
                 is ChatAction.RetryMessage -> onRetry(action.messageId)
                 is ChatAction.SimulateRapidInbound -> simulateRapidInbound()
                 is ChatAction.ToggleTyping -> toggleTyping()
-                is ChatAction.SimulateNextFailure -> fakeNetworkConfig.scheduleSendFailure()
+                is ChatAction.SimulateNextFailure -> onToggleFailure()
             }
         }
 
@@ -77,6 +77,8 @@ class ChatViewModel
             onInputChanged("")
             viewModelScope.launch {
                 sendMessage(content = text, senderId = "user_local")
+                // Flag is consumed by the send — reset the armed indicator
+                _uiState.update { it.copy(isFailNextSendArmed = false) }
                 _effects.emit(ChatEffect.ScrollToBottom)
             }
         }
@@ -85,8 +87,15 @@ class ChatViewModel
             val message = _uiState.value.messages.find { it.id == messageId } ?: return
             viewModelScope.launch {
                 retryMessage(message)
+                _uiState.update { it.copy(isFailNextSendArmed = false) }
                 _effects.emit(ChatEffect.ScrollToBottom)
             }
+        }
+
+        private fun onToggleFailure() {
+            val arm = !_uiState.value.isFailNextSendArmed
+            if (arm) fakeNetworkConfig.scheduleSendFailure() else fakeNetworkConfig.cancelFailure()
+            _uiState.update { it.copy(isFailNextSendArmed = arm) }
         }
 
         private fun simulateRapidInbound() {
@@ -111,6 +120,9 @@ class ChatViewModel
         private fun toggleTyping() {
             isTyping = !isTyping
             fakeChatStream.setTyping(isTyping)
+            if (isTyping) {
+                viewModelScope.launch { _effects.emit(ChatEffect.ScrollToBottom) }
+            }
         }
 
         companion object {

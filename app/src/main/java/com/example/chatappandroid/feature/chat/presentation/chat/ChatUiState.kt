@@ -7,4 +7,6 @@ data class ChatUiState(
     val inputText: String = "",
     val isTypingIndicatorVisible: Boolean = false,
     val isLoading: Boolean = false,
+    // Debug: true means the next send will be forced to fail
+    val isFailNextSendArmed: Boolean = false,
 )
