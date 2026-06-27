@@ -7,7 +7,7 @@ import com.example.chatappandroid.feature.chat.data.local.MessageEntity
 
 @Database(
     entities = [MessageEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false,
 )
 abstract class ChatDatabase : RoomDatabase() {

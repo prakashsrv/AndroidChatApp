@@ -14,11 +14,15 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
-
     @Provides
     @Singleton
-    fun provideChatDatabase(@ApplicationContext context: Context): ChatDatabase =
-        Room.databaseBuilder(context, ChatDatabase::class.java, "chat.db").build()
+    fun provideChatDatabase(
+        @ApplicationContext context: Context,
+    ): ChatDatabase =
+        Room
+            .databaseBuilder(context, ChatDatabase::class.java, "chat.db")
+            .fallbackToDestructiveMigration(dropAllTables = true) // dev only — add migrations before release
+            .build()
 
     @Provides
     fun provideChatDao(db: ChatDatabase): ChatDao = db.chatDao()

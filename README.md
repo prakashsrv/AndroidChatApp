@@ -105,6 +105,8 @@ On server acknowledgement the existing row is **updated**, never re-inserted. Th
 | `status` | `PENDING` | `SENT` | Updated |
 | `senderId` | `user_prakash_123` | `user_prakash_123` | No change |
 
+Inbound messages from others carry a `serverId` — stored with a unique index in Room — so if the stream reconnects and re-delivers the same message, the upsert overwrites the existing row instead of inserting a duplicate.
+
 ### Real-time inbound
 
 Inbound messages never reach the ViewModel or UI directly — **everything flows through Room**:
