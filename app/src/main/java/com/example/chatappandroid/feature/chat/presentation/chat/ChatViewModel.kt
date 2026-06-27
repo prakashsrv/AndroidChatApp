@@ -2,6 +2,9 @@ package com.example.chatappandroid.feature.chat.presentation.chat
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.chatappandroid.feature.chat.data.stream.FakeChatStream
+import com.example.chatappandroid.feature.chat.domain.model.Message
+import com.example.chatappandroid.feature.chat.domain.model.MessageStatus
 import com.example.chatappandroid.feature.chat.domain.usecase.ObserveMessagesUseCase
 import com.example.chatappandroid.feature.chat.domain.usecase.SendMessageUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,12 +15,14 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class ChatViewModel @Inject constructor(
     private val observeMessages: ObserveMessagesUseCase,
     private val sendMessage: SendMessageUseCase,
+    private val fakeChatStream: FakeChatStream, // debug only
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatUiState())
@@ -26,10 +31,17 @@ class ChatViewModel @Inject constructor(
     private val _effects = MutableSharedFlow<ChatEffect>()
     val effects = _effects.asSharedFlow()
 
+    private var isTyping = false
+
     init {
         viewModelScope.launch {
             observeMessages().collect { messages ->
                 _uiState.update { it.copy(messages = messages) }
+            }
+        }
+        viewModelScope.launch {
+            fakeChatStream.isTyping.collect { typing ->
+                _uiState.update { it.copy(isTypingIndicatorVisible = typing) }
             }
         }
     }
@@ -39,6 +51,8 @@ class ChatViewModel @Inject constructor(
             is ChatAction.InputChanged -> _uiState.update { it.copy(inputText = action.text) }
             is ChatAction.SendMessage -> onSend()
             is ChatAction.RetryMessage -> Unit // TODO
+            is ChatAction.SimulateRapidInbound -> simulateRapidInbound()
+            is ChatAction.ToggleTyping -> toggleTyping()
         }
     }
 
@@ -50,5 +64,28 @@ class ChatViewModel @Inject constructor(
             sendMessage(content = text, senderId = "user_local")
             _effects.emit(ChatEffect.ScrollToBottom)
         }
+    }
+
+    private fun simulateRapidInbound() {
+        viewModelScope.launch {
+            val base = System.currentTimeMillis()
+            val messages = (1..30).map { i ->
+                Message(
+                    id = UUID.randomUUID().toString(),
+                    content = "Inbound message #$i",
+                    senderId = "other_user",
+                    clientTimestamp = base + i,
+                    status = MessageStatus.SENT,
+                    isOwn = false,
+                )
+            }
+            fakeChatStream.emitBurst(messages)
+            _effects.emit(ChatEffect.ScrollToBottom)
+        }
+    }
+
+    private fun toggleTyping() {
+        isTyping = !isTyping
+        fakeChatStream.setTyping(isTyping)
     }
 }

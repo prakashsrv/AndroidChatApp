@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.chatappandroid.feature.chat.presentation.components.ChatInputBar
+import com.example.chatappandroid.feature.chat.presentation.components.DebugPanel
 import com.example.chatappandroid.feature.chat.presentation.components.MessageBubble
 import com.example.chatappandroid.feature.chat.presentation.components.TypingIndicator
 
@@ -57,6 +58,10 @@ fun ChatScreen(
                     value = uiState.inputText,
                     onValueChange = { viewModel.onAction(ChatAction.InputChanged(it)) },
                     onSend = { viewModel.onAction(ChatAction.SendMessage) },
+                )
+                DebugPanel(
+                    onSimulateRapidInbound = { viewModel.onAction(ChatAction.SimulateRapidInbound) },
+                    onToggleTyping = { viewModel.onAction(ChatAction.ToggleTyping) },
                 )
             }
         },
