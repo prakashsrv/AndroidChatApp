@@ -12,6 +12,10 @@ A single, focused **native Android** chat screen built to demonstrate production
 
 ---
 
+![Demo](docs/androidchat.gif)
+
+---
+
 ## Table of contents
 
 - [What it does](#what-it-does)
