@@ -53,15 +53,15 @@ fun ChatScreen(
         },
         bottomBar = {
             Column(modifier = Modifier.navigationBarsPadding()) {
+                DebugPanel(
+                    onSimulateRapidInbound = { viewModel.onAction(ChatAction.SimulateRapidInbound) },
+                    onToggleTyping = { viewModel.onAction(ChatAction.ToggleTyping) },
+                )
                 HorizontalDivider()
                 ChatInputBar(
                     value = uiState.inputText,
                     onValueChange = { viewModel.onAction(ChatAction.InputChanged(it)) },
                     onSend = { viewModel.onAction(ChatAction.SendMessage) },
-                )
-                DebugPanel(
-                    onSimulateRapidInbound = { viewModel.onAction(ChatAction.SimulateRapidInbound) },
-                    onToggleTyping = { viewModel.onAction(ChatAction.ToggleTyping) },
                 )
             }
         },
