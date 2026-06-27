@@ -1,15 +1,16 @@
 package com.example.chatappandroid.feature.chat.presentation.chat
 
 import app.cash.turbine.test
+import com.example.chatappandroid.feature.chat.data.stream.FakeChatStream
 import com.example.chatappandroid.feature.chat.domain.model.Message
 import com.example.chatappandroid.feature.chat.domain.model.MessageStatus
 import com.example.chatappandroid.feature.chat.domain.usecase.ObserveMessagesUseCase
 import com.example.chatappandroid.feature.chat.domain.usecase.SendMessageUseCase
-import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -21,12 +22,14 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ChatViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
 
     private lateinit var observeMessages: ObserveMessagesUseCase
     private lateinit var sendMessage: SendMessageUseCase
+    private lateinit var fakeChatStream: FakeChatStream
     private lateinit var viewModel: ChatViewModel
 
     @Before
@@ -34,8 +37,9 @@ class ChatViewModelTest {
         Dispatchers.setMain(testDispatcher)
         observeMessages = mockk()
         sendMessage = mockk(relaxed = true)
+        fakeChatStream = FakeChatStream()
         every { observeMessages() } returns flowOf(emptyList())
-        viewModel = ChatViewModel(observeMessages, sendMessage)
+        viewModel = ChatViewModel(observeMessages, sendMessage, fakeChatStream)
     }
 
     @After
@@ -54,7 +58,7 @@ class ChatViewModelTest {
     fun `uiState updates when messages are emitted`() = runTest {
         val messages = listOf(fakeMessage("1"), fakeMessage("2"))
         every { observeMessages() } returns flowOf(messages)
-        viewModel = ChatViewModel(observeMessages, sendMessage)
+        viewModel = ChatViewModel(observeMessages, sendMessage, fakeChatStream)
 
         testDispatcher.scheduler.advanceUntilIdle()
 
@@ -108,6 +112,13 @@ class ChatViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
 
         coVerify(exactly = 0) { sendMessage(any(), any()) }
+    }
+
+    @Test
+    fun `typing indicator updates when stream emits typing state`() = runTest {
+        fakeChatStream.setTyping(true)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.isTypingIndicatorVisible)
     }
 
     // --- helpers ---
