@@ -57,12 +57,20 @@ class SendMessageUseCaseTest {
         runTest {
             val confirmed = fakeConfirmed()
             coEvery { repository.sendMessageToServer(any()) } returns Result.success(confirmed)
-            val slot = slot<Message>()
-            coEvery { repository.updateMessage(capture(slot)) } returns Unit
+            val pendingSlot = slot<Message>()
+            val updateSlot = slot<Message>()
+            coEvery { repository.insertPendingMessage(capture(pendingSlot)) } returns Unit
+            coEvery { repository.updateMessage(capture(updateSlot)) } returns Unit
 
             useCase(content = "Hello", senderId = "user_1")
 
-            assertEquals(MessageStatus.SENT, slot.captured.status)
+            val updated = updateSlot.captured
+            // Row is updated in-place using the client UUID — no new row inserted
+            assertEquals(pendingSlot.captured.id, updated.id)
+            // Server-assigned ID is stored in serverId
+            assertEquals(confirmed.id, updated.serverId)
+            assertEquals(MessageStatus.SENT, updated.status)
+            assertNotNull(updated.serverTimestamp)
         }
 
     @Test

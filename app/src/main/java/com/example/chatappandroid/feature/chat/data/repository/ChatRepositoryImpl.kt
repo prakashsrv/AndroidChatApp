@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.io.IOException
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -46,7 +47,14 @@ class ChatRepositoryImpl
             return if (fakeNetworkConfig.consumeFailureFlag()) {
                 Result.failure(IOException("Simulated network failure"))
             } else {
-                Result.success(message.copy(serverTimestamp = System.currentTimeMillis()))
+                // Server assigns its own permanent ID — different from the client UUID.
+                // The caller must reconcile using the original pending message's id.
+                Result.success(
+                    message.copy(
+                        id = "srv_${UUID.randomUUID()}",
+                        serverTimestamp = System.currentTimeMillis(),
+                    ),
+                )
             }
         }
 

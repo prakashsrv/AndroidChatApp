@@ -94,16 +94,16 @@ The message is written to Room *before* the network call, so the UI updates inst
 
 ### Reconciliation — same row, no duplicate
 
-On server acknowledgement the existing row is **updated**, never re-inserted. The Room write uses an `INSERT OR REPLACE` strategy keyed on the message id.
+On server acknowledgement the existing row is **updated in-place**, never re-inserted. The key insight: the server returns its own permanent ID which differs from the client UUID. Reconciliation uses the **client UUID** (`id`) to find the row, then stores the server's ID in `serverId`. Upserting by the server ID would insert a duplicate row alongside the PENDING one.
 
 | Column | After send (optimistic) | After server ACK | Change |
 |--------|------------------------|------------------|--------|
-| `id` | `temp1` | `serverId123` | Updated |
-| `serverId` | `null` | `serverId123` | Filled in |
+| `id` | `client-uuid-123` | `client-uuid-123` | **No change** — used to locate the row |
+| `serverId` | `null` | `srv_abc456` | Filled in — server's permanent ID |
 | `content` | "Hey, how are you?" | "Hey, how are you?" | No change |
-| `timestamp` | `1000000001` | `1000000001` | Usually unchanged |
+| `clientTimestamp` | `1000000001` | `1000000001` | No change — ordering stays stable |
+| `serverTimestamp` | `null` | `1000000099` | Filled in |
 | `status` | `PENDING` | `SENT` | Updated |
-| `senderId` | `user_prakash_123` | `user_prakash_123` | No change |
 
 Inbound messages from others carry a `serverId` — stored with a unique index in Room — so if the stream reconnects and re-delivers the same message, the upsert overwrites the existing row instead of inserting a duplicate.
 

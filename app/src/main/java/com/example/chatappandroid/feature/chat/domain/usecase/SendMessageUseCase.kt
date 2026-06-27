@@ -28,7 +28,16 @@ class SendMessageUseCase
 
             repository.sendMessageToServer(pending)
                 .onSuccess { confirmed ->
-                    repository.updateMessage(confirmed.copy(status = MessageStatus.SENT))
+                    // Use pending.id (client UUID) to update the existing row in-place.
+                    // confirmed.id is the server-assigned ID — store it in serverId.
+                    // Upserting confirmed.id directly would insert a duplicate row.
+                    repository.updateMessage(
+                        pending.copy(
+                            serverId = confirmed.id,
+                            serverTimestamp = confirmed.serverTimestamp,
+                            status = MessageStatus.SENT,
+                        ),
+                    )
                 }
                 .onFailure {
                     repository.updateMessage(pending.copy(status = MessageStatus.FAILED))

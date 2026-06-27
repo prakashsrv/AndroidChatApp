@@ -20,7 +20,13 @@ class RetryMessageUseCase
 
             repository.sendMessageToServer(pending)
                 .onSuccess { confirmed ->
-                    repository.updateMessage(confirmed.copy(status = MessageStatus.SENT))
+                    repository.updateMessage(
+                        pending.copy(
+                            serverId = confirmed.id,
+                            serverTimestamp = confirmed.serverTimestamp,
+                            status = MessageStatus.SENT,
+                        ),
+                    )
                 }
                 .onFailure {
                     repository.updateMessage(pending.copy(status = MessageStatus.FAILED))
