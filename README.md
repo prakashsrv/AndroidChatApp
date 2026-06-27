@@ -19,6 +19,7 @@ A single, focused **native Android** chat screen built to demonstrate production
 - [How it works](#how-it-works)
 - [Tech stack](#tech-stack)
 - [Project structure](#project-structure)
+- [Code quality](#code-quality)
 - [Getting started](#getting-started)
 - [Testing](#testing)
 - [Out of scope & roadmap](#out-of-scope--roadmap)
@@ -133,7 +134,9 @@ Stable ordering is enforced with a client-generated timestamp plus a unique UUID
 | Async | **Coroutines + Flow** | Structured concurrency, cold & backpressure-aware, first-class in Room/Paging/Retrofit |
 | Persistence | **Room** | Reactive single source of truth — reactivity and persistence for free |
 | DI | **Hilt** | Google's official DI; trivial test fakes via `@TestInstallIn` |
-| Testing | **JUnit · `runTest` · Turbine** | Deterministic Flow assertions |
+| Testing | **JUnit · `runTest` · Turbine · MockK** | Deterministic Flow assertions, relaxed mocking |
+| Code style | **ktlint** | Enforces consistent Kotlin formatting; Compose-aware via `.editorconfig` |
+| Static analysis | **detekt** | Catches complexity, magic numbers, and naming issues; Compose-aware config |
 
 ---
 
@@ -174,6 +177,23 @@ The **domain layer has zero Android dependencies** — pure Kotlin, perfect for 
 
 ---
 
+## Code quality
+
+```bash
+# Check formatting
+./gradlew ktlintCheck
+
+# Auto-fix formatting
+./gradlew ktlintFormat
+
+# Run static analysis
+./gradlew detekt
+```
+
+ktlint is configured via `.editorconfig` with Compose-aware overrides (PascalCase function names, 120-char line length). detekt config lives in `config/detekt/detekt.yml` with raised thresholds for Composable parameter lists and test files excluded from magic-number rules.
+
+---
+
 ## Getting started
 
 ### Prerequisites
@@ -199,7 +219,7 @@ Then open the project in Android Studio and run the `app` configuration.
 
 ### Try the real-time behaviour
 
-The debug UI includes a **"Simulate Rapid Inbound"** button that fires 20–50 messages in quick succession. Use it to watch ordering stay stable and confirm there are no duplicates — the same property the unit tests assert.
+The debug UI includes a **"Rapid Inbound"** button that fires 30 messages in quick succession. Use it to watch ordering stay stable and confirm there are no duplicates — the same property the unit tests assert.
 
 > No backend is required. The app ships with a controllable `FakeChatStream` standing in for a production WebSocket.
 
